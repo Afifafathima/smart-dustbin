@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Dust Bin - Home Automation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(145deg, #f5f7fa, #c3cfe2);
+            color: #333;
+            text-align: center;
+            padding: 30px;
+	    height:100vh;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            font-size: 32px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 3.5em;
+            letter-spacing: 2px;
+            margin: 0;
+        }
+
+        h2 {
+            margin: 40px 0;
+            font-size: 2.5em;
+            color: #4CAF50;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .gauge-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .gauge-box {
+            width: 45%;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-box:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .gauge-box h3 {
+            font-size: 1.8em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .gauge-box p {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+
+        .data-box {
+            background-color: white;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            width: 30%;
+            text-align: center;
+            font-size: 1.5em;
+            transition: transform 0.3s ease;
+            margin-bottom: 30px;
+        }
+
+        .data-box:hover {
+            transform: translateY(-10px);
+        }
+
+        .data-box p {
+            margin-bottom: 10px;
+        }
+
+        .fill-level-bar {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-top: 15px;
+            position: relative;
+            transition: background-color 0.3s ease;
+        }
+
+        .fill-level-bar-inner {
+            height: 100%;
+            background-color: #4CAF50;
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .alert {
+            background-color: #ff5733;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        footer {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin-top: 40px;
+            font-size: 1.1em;
+            border-radius: 10px;
+        }
+
+        .team-name {
+            color: #f0f8ff;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .gauge-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .gauge-box {
+                width: 80%;
+                margin-bottom: 20px;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            .data-box {
+                width: 80%;
+                margin: 0 auto 20px auto; /* Center the fill level box */
+            }
+
+            footer {
+                font-size: 1em;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 2.5em;
+            }
+
+            h2 {
+                font-size: 2em;
+            }
+
+            .gauge-box h3 {
+                font-size: 1.5em;
+            }
+
+            .gauge-box p {
+                font-size: 1.2em;
+            }
+
+            .data-box p {
+                font-size: 1.3em;
+            }
+        }
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/raphael@2.3.0/raphael.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/justgage@1.3.1/justgage.min.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Smart Dust Bin</h1>
+    </header>
+    
+    <h2>Sensor Data</h2>
+
+    <div class="container">
+        <!-- Gauge Containers for Temperature and Humidity -->
+        <div class="gauge-container">
+            <!-- Temperature Gauge -->
+            <div class="gauge-box" id="temperatureBox">
+                <h3>Temperature</h3>
+                <div id="temperatureGauge"></div>
+                <p><strong>Current Temperature:</strong> <span id="temperature">--</span> °C</p>
+            </div>
+
+            <!-- Humidity Gauge -->
+            <div class="gauge-box" id="humidityBox">
+                <h3>Humidity</h3>
+                <div id="humidityGauge"></div>
+                <p><strong>Current Humidity:</strong> <span id="humidity">--</span> %</p>
+            </div>
+        </div>
+
+        <!-- Fill Level Box -->
+        <div class="data-box" id="fillLevelBox">
+            <p><strong>Fill Level:</strong> <span id="fillLevel">--</span> cm</p>
+            <div class="fill-level-bar">
+                <div id="fillLevelBar" class="fill-level-bar-inner"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="alertBox" class="alert">Warning: The dustbin is nearly full!</div>
+
+    <footer>
+        <p>Smart Dustbin Management System | Page in ❤️ with team <span class='team-name'>Tech Innovators.</span></p>
+    </footer>
+
+    <script>
+        const serverURL = 'ws://192.168.154.141:3000';  // WebSocket URL (adjust IP accordingly)
+        const alertThreshold = 90; // Threshold for the fill level (in percentage)
+        const fullThreshold = 10;  // Threshold for "full" status (in cm)
+
+        // Connect to the WebSocket
+        const socket = new WebSocket(serverURL);
+
+        // Create gauges for temperature and humidity
+        const tempGauge = new JustGage({
+            id: 'temperatureGauge',
+            value: 0,
+            min: -10,
+            max: 50,
+            title: 'Temperature',
+            label: '°C',
+            levelColors: ['#ff0000', '#ffcc00', '#00ff00'],
+            customSectors: [
+                { lo: -10, hi: 10, color: "#ff0000" },
+                { lo: 10, hi: 30, color: "#ffcc00" },
+                { lo: 30, hi: 50, color: "#00ff00" }
+            ]
+        });
+
+        const humGauge = new JustGage({
+            id: 'humidityGauge',
+            value: 0,
+            min: 0,
+            max: 100,
+            title: 'Humidity',
+            label: '%',
+            levelColors: ['#ff0000', '#ffff00', '#00ff00']
+        });
+
+        socket.onopen = () => {
+            console.log('WebSocket connection established.');
+        };
+
+        // When data is received through the WebSocket
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+
+            // Update temperature and humidity values in gauges
+            tempGauge.refresh(data.temperature);
+            humGauge.refresh(data.humidity);
+
+            // Update the fill level data and the fill level bar
+            const fillLevel = data.ultrasonicDistance;
+            document.getElementById('fillLevel').textContent = fillLevel;
+
+            // Update the width of the fill level bar (percentage-based)
+            const fillPercentage = Math.min(100, (fillLevel / 100) * 100); // Assuming the max fill level is 100 cm
+            document.getElementById('fillLevelBar').style.width = `${fillPercentage}%`;
+
+            // Check if the fill level exceeds the threshold and show alert if necessary
+            if (fillLevel <= fullThreshold) {
+                document.getElementById('alertBox').style.display = 'block';
+            } else {
+                document.getElementById('alertBox').style.display = 'none';
+            }
+        };
+
+        // If the WebSocket encounters an error
+        socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        // Close the WebSocket connection when it's no longer needed
+        socket.onclose = () => {
+            console.log('WebSocket connection closed.');
+        };
+    </script>
+</body>
+</html>
